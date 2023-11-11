@@ -13,7 +13,7 @@ result_queue_url = os.getenv('RESULT_QUEUE_URL')
 api_key = os.getenv('API_KEY')
 
 # Initialize a session using Amazon SQS
-sqs = boto3.client('sqs')
+sqs = boto3.client('sqs', region_name=os.getenv('AWS_REGION'))
 
 def get_payload_config(stop):
     return {
