@@ -52,7 +52,8 @@ def run_inference(message_data):
     payload['prompt'] = prompt
 
     # Send the POST request
-    response = requests.post(url, headers={'Content-Type': 'application/json'}, json=payload)
+    response = requests.post(url, headers={'Content-Type': 'application/json',
+                                           'Authorization': f'Bearer {os.getenv("API_KEY")}'}, json=payload)
 
     # Ensure the request was successful
     response.raise_for_status()
