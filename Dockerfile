@@ -2,7 +2,7 @@ FROM nvidia/cuda:12.3.0-devel-ubuntu22.04
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y wget supervisor git cmake python3 python3-pip && rm -rf /var/lib/apt/lists/*
 RUN git clone https://github.com/ggerganov/llama.cpp.git /root/llama.cpp && \
     cd /root/llama.cpp && \
-    git checkout 0ef3ca2ac62016c0c545de1c89dc2e3e130f4a99 && \
+    git checkout 2891c8aa9af17f4ff636ff3868bc34ff72b56e25 && \
     mkdir build && \
     cd build && \
     cmake .. -DLLAMA_CUBLAS=ON && \
