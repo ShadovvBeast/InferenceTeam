@@ -1,3 +1,4 @@
+import base64
 import os
 import json
 import boto3
@@ -50,6 +51,8 @@ def run_inference(message_data):
     # Get the payload configuration and update the prompt field
     payload = get_payload_config(stop)
     payload['prompt'] = prompt
+    if 'image_data' in message_data:
+        payload['image_data'] = message_data['image_data']
 
     # Send the POST request
     response = requests.post(url, headers={'Content-Type': 'application/json',
@@ -82,6 +85,18 @@ def process_messages():
                     print('Invalid API key')
                     continue  # Skip processing if the API key is invalid
 
+                # Check if 'full_picture' is in message_data and download the image and convert to base64
+                if 'full_picture' in message_body:
+                    # Download the image
+                    response = requests.get(message_body['full_picture'])
+                    response.raise_for_status()  # Ensure the request was successful
+
+                    # Convert the image to base64
+                    image_data_base64 = base64.b64encode(response.content).decode('utf-8')
+
+                    # Add the base64 string  under 'image_data'
+                    message_body['image_data'] = [{"data": image_data_base64, "id": 10}]
+
                 # Run inference
                 inference_result = run_inference(message_body)
 
@@ -94,12 +109,6 @@ def process_messages():
                 sqs.send_message(
                     QueueUrl=result_queue_url,
                     MessageBody=json.dumps(result_message)
-                )
-
-                # Delete received message from queue
-                sqs.delete_message(
-                    QueueUrl=job_queue_url,
-                    ReceiptHandle=message['ReceiptHandle']
                 )
         else:
             print('No messages to process. Waiting for messages...', end='\r', flush=True)
