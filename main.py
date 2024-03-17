@@ -68,8 +68,9 @@ def run_inference(message_data):
         # Ensure the request was successful
         response.raise_for_status()
 
-        # Check if the response content is not empty or whitespace
-        if response.content.strip():
+        # Check if the response content is not empty, whitespace, or only non-character symbols or their escape sequences
+        content = response.content.decode('utf-8')
+        if content.strip() and not all(char in '\\nr' for char in content):
             response_data = response.json()
             break
         else:
