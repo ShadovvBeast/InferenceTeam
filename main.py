@@ -54,15 +54,33 @@ def run_inference(message_data):
     if 'image_data' in message_data:
         payload['image_data'] = message_data['image_data']
 
-    # Send the POST request
-    response = requests.post(url, headers={'Content-Type': 'application/json',
-                                           'Authorization': f'Bearer {os.getenv("API_KEY")}'}, json=payload)
+    # Initialize retry count
+    retry_count = 0
+    max_retries = 3
+    response_data = None
 
-    # Ensure the request was successful
-    response.raise_for_status()
+    # Retry loop for inference
+    while retry_count < max_retries:
+        # Send the POST request
+        response = requests.post(url, headers={'Content-Type': 'application/json',
+                                               'Authorization': f'Bearer {os.getenv("API_KEY")}'}, json=payload)
+
+        # Ensure the request was successful
+        response.raise_for_status()
+
+        # Check if the response content is not empty or whitespace
+        if response.content.strip():
+            response_data = response.json()
+            break
+        else:
+            retry_count += 1
+            time.sleep(1)  # Wait a bit before retrying
+
+    if response_data is None:
+        raise ValueError("Inference result is empty after retries.")
 
     # Return the response data
-    return response.json()
+    return response_data
 
 
 def process_messages():
