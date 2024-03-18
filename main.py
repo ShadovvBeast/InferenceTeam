@@ -119,6 +119,9 @@ def process_messages():
                 # Run inference
                 inference_result = run_inference(message_body)
 
+                if 'image_data' in message_body:
+                    del message_body['image_data']
+
                 result_message = {
                     'incoming_message': message_body,
                     'inference_result': inference_result
