@@ -5,8 +5,8 @@ import boto3
 import requests
 import time
 
-from dotenv import load_dotenv
-load_dotenv()
+#from dotenv import load_dotenv
+#load_dotenv()
 
 # Get environment variables
 job_queue_url = os.getenv('JOB_QUEUE_URL')
@@ -69,9 +69,9 @@ def run_inference(message_data):
         response.raise_for_status()
 
         # Check if the response content is not empty, whitespace, or only non-character symbols or their escape sequences
-        content = response.content.decode('utf-8')
-        if content.strip() and not all(char in '\\nr' for char in content):
-            response_data = response.json()
+        json = response.json()
+        if json['content'].strip() and not all(char in '\\nr' for char in json['content']):
+            response_data = json
             break
         else:
             retry_count += 1
@@ -128,6 +128,11 @@ def process_messages():
                 sqs.send_message(
                     QueueUrl=result_queue_url,
                     MessageBody=json.dumps(result_message)
+                )
+
+                sqs.delete_message(
+                    QueueUrl=job_queue_url,
+                    ReceiptHandle=message['ReceiptHandle']
                 )
         else:
             print('No messages to process. Waiting for messages...', end='\r', flush=True)
